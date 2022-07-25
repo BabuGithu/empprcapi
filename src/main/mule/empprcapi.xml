@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="ccbbbcae-3f8a-4eb4-9b1c-0481671f60e7" >
+		<http:listener-connection host="0.0.0.0" port="8084" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="639b2afd-3857-4d27-ad61-b8a54558cd21" >
+		<http:request-connection host="localhost" port="8085" connectionIdleTimeout="300000" />
+	</http:request-config>
+	<flow name="empprcapiFlow" doc:id="d32b02fe-6bfc-49ee-bf3f-acc2f74560fb" >
+		<http:listener doc:name="Listener" doc:id="faed2a67-e48d-47fd-9df5-4f38bd015f94" config-ref="HTTP_Listener_config" path="/empprc"/>
+		<ee:transform doc:name="Transform Message" doc:id="d50fc600-56b6-462e-8852-dd9b7b754ad1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map (payload01, indexOfpayload01) ->
+{
+    "eno__c": payload01.eno__c,
+    "Name": payload01.Name,
+    "designation__c": payload01.designation__c ++ "Updated",
+    "sal__c": payload01.sal__c
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request" doc:id="b1c18085-17da-449d-9916-f1e98b9474a5" config-ref="HTTP_Request_configuration" path="/api/empupdate"/>
+	</flow>
+</mule>
